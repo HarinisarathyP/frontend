@@ -40,7 +40,9 @@ const buildQueryString = (filters: FilterState): string => {
  */
 export async function fetchRestaurants(filters: FilterState): Promise<Restaurant[]> {
     const queryString = buildQueryString(filters);
-    const url = `${API_BASE_URL}/restaurants?${queryString}`;
+    
+    // 🎯 FIX: Hardcode '/api' into the URL construction
+    const url = `${API_BASE_URL}/api/restaurants?${queryString}`;
 
     console.log('API Request URL:', url); 
     
@@ -92,7 +94,8 @@ const MOCK_MENU_ITEMS: IMenuDish[] = [
  * Fetches the menu items for a specific restaurant ID from the backend API.
  */
 export async function fetchMenuByRestaurantId(restaurantId: string): Promise<IMenuDish[]> {
-    const url = `${API_BASE_URL}/restaurants/${restaurantId}/menu`;
+    // 🎯 FIX: Hardcode '/api' into the URL construction
+    const url = `${API_BASE_URL}/api/restaurants/${restaurantId}/menu`;
 
     console.log('API Request URL (Menu):', url);
 
