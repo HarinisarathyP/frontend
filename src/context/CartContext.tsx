@@ -1,47 +1,107 @@
-// src/context/CartContext.tsx
+import React, { createContext, useContext, useReducer, type ReactNode } from 'react';
 
-import React, { createContext, useState } from 'react';
-import type { ReactNode } from 'react'; 
-
-// --- Type Definitions ---
-
-// 🔑 MODIFIED: Only visual count functionality is exposed
-export interface CartContextType {
-  visualCartCount: number; 
-  incrementVisualCount: () => void; 
-  // REMOVED: cartItems, totalItems, clearCart, totalPrice, and all modification functions
+// Define Cart Item Interface
+interface CartItem {
+  _id: string;
+  name: string;
+  price: number;
+  image: string;
+  qty: number;
+  restaurantId?: string;
+  restaurantName?: string;
+  restaurantImage?: string;
 }
 
-export const CartContext = createContext<CartContextType | undefined>(undefined);
-
-
-// Define the props for the provider component
-interface CartProviderProps {
-  children: ReactNode; 
+// Define State Interface
+interface CartState {
+  cartItems: CartItem[];
 }
 
+// Define Actions
+type CartAction =
+  | { type: 'ADD_ITEM'; payload: CartItem }
+  | { type: 'REMOVE_ITEM'; payload: string }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; qty: number } }
+  | { type: 'CLEAR_CART' };
 
-// The provider component that manages state and provides it to children
-export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  // 🔑 MODIFIED: Only visualCartCount state is maintained
-  const [visualCartCount, setVisualCartCount] = useState(0);
+// Initial State
+const initialState: CartState = {
+  cartItems: localStorage.getItem('cartItems')
+    ? JSON.parse(localStorage.getItem('cartItems')!)
+    : [],
+};
 
-  // --- Action Handlers ---
-  
-  const incrementVisualCount = () => {
-    setVisualCartCount(prev => prev + 1);
-    console.log('Visual Cart Badge Incremented');
+// Reducer
+const cartReducer = (state: CartState, action: CartAction): CartState => {
+  switch (action.type) {
+    case 'ADD_ITEM':
+      const item = action.payload;
+      const existItem = state.cartItems.find((x) => x._id === item._id);
+
+      if (existItem) {
+        // Increment quantity when adding existing item
+        return {
+          ...state,
+          cartItems: state.cartItems.map((x) =>
+            x._id === existItem._id ? { ...x, qty: x.qty + 1 } : x
+          ),
+        };
+      } else {
+        return {
+          ...state,
+          cartItems: [...state.cartItems, item],
+        };
+      }
+
+    case 'UPDATE_QUANTITY':
+      return {
+        ...state,
+        cartItems: state.cartItems.map((x) =>
+          x._id === action.payload.id ? { ...x, qty: action.payload.qty } : x
+        ),
+      };
+
+    case 'REMOVE_ITEM':
+      return {
+        ...state,
+        cartItems: state.cartItems.filter((x) => x._id !== action.payload),
+      };
+
+    case 'CLEAR_CART':
+      return {
+        ...state,
+        cartItems: [],
+      };
+
+    default:
+      return state;
   }
+};
 
-  // The value provided to consumers of the context
-  const contextValue: CartContextType = {
-    visualCartCount,
-    incrementVisualCount,
-  };
+// Context
+const CartContext = createContext<{
+  state: CartState;
+  dispatch: React.Dispatch<CartAction>;
+}>({
+  state: initialState,
+  dispatch: () => null,
+});
+
+// Provider Component
+export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  // Persist to local storage
+  React.useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+  }, [state.cartItems]);
 
   return (
-    <CartContext.Provider value={contextValue}>
+    <CartContext.Provider value={{ state, dispatch }}>
       {children}
     </CartContext.Provider>
   );
 };
+
+// Custom Hook
+export const useCart = () => useContext(CartContext);

@@ -7,15 +7,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     // 🎯 NEW: Set the default development server port to 5173
-    port: 5173, 
+    port: 5173,
     // OPTIONAL: If true, the server will error out if 5173 is busy, 
     // ensuring it never silently uses a different port.
-    strictPort: true, 
+    strictPort: true,
     proxy: {
       // Proxy requests starting with '/api'
       '/api': {
         // Target is your backend URL
-        target: 'http://localhost:3000',
+        target: 'http://127.0.0.1:5000',
         // Important: changes the Host header to match the target
         changeOrigin: true,
         // Optional: If your backend expects the path without '/api', use rewrite

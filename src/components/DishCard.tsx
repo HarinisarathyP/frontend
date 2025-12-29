@@ -42,7 +42,7 @@ const DishCard: React.FC<DishCardProps> = ({ dish }) => {
             <div className="dish-info">
                 
                 <h3 className="dish-name">{dish.name}</h3>
-                <p className="dish-price">₹ {formattedPrice}</p>
+                <p className="dish-price">{formattedPrice}</p>
                 <p className="dish-description">{dish.description}</p>
                 <p className="dish-spice-level">Spice: {dish.spiceLevel}</p>
             </div>
